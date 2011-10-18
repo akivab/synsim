@@ -10,8 +10,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,19 +19,13 @@ public class SynapseSimulation {
 	static int WIDTH = 100;
 	static int HEIGHT = 100;
 	static int NUM_MOLECULES = WIDTH*10;
-	static double GENESIS_RATE = 0.005;
-	static float PERCENT_MYOSIN = 1f;
 	static boolean debug;
-	static String dir = "/home/akiva/Desktop/synsim2/";
-	static String index = "index1.txt";
 	List<Molecule> all;
-	Random rand;
 	Logger logger;
 	
 	
 	public SynapseSimulation(Logger logger){
 		this.all = new ArrayList<Molecule>();
-		this.rand = new Random();
 		this.logger = logger;
 		debug = false;
 		initialize();
@@ -42,7 +34,6 @@ public class SynapseSimulation {
 	
 	public SynapseSimulation(Logger logger, boolean init){
 		this.all = new ArrayList<Molecule>();
-		this.rand = new Random();
 		this.logger = logger;
 		if(init){ initialize(); debug = !init; }
 		else testInit();
@@ -51,15 +42,17 @@ public class SynapseSimulation {
 	public void initialize(){
 		Molecule mol;
 		try{
-			FileWriter outFile = new FileWriter(dir + index);
+			File dir = new File(SimulationValues.OUTPUT_DIR);
+			dir.mkdirs();
+			FileWriter outFile = new FileWriter(SimulationValues.OUTPUT_DIR + SimulationValues.INDEX_FILE_NAME);
 			PrintWriter out = new PrintWriter(outFile);
-			out.println("Molecule force constant: " + Molecule.M);
-			out.println("Chance (out of 1) of decay per frame: " + Molecule.DECAY_RATE);
-			out.println("Genesis rate: " + Molecule.GENESIS_RATE + " (overall: " + GENESIS_RATE + ")");
-			out.println("Force (relative to Actin-Actin) of Myosin on Actin: " + Molecule.MYOSIN_ON_ACTIN);
-			out.println("Force (relative to Actin-Actin) of Actin on Myosin: " + Molecule.ACTIN_ON_MYOSIN);
-			out.println("Top Myosin Velocity: " + Molecule.MYOSIN_TOP_VELOCITY);
-			out.println("Top Actin Velocity: " + Molecule.ACTIN_TOP_VELOCITY);
+			out.println("Molecule force constant: " + SimulationValues.M);
+			out.println("Chance (out of 1) of decay per frame: " + SimulationValues.DECAY_RATE);
+			out.println("Genesis rate: " + SimulationValues.OKT3_ACTIN_GENESIS_RATE + " (overall: " + SimulationValues.GENESIS_RATE + ")");
+			out.println("Force (relative to Actin-Actin) of Myosin on Actin: " + SimulationValues.MYOSIN_ON_ACTIN);
+			out.println("Force (relative to Actin-Actin) of Actin on Myosin: " + SimulationValues.ACTIN_ON_MYOSIN);
+			out.println("Top Myosin Velocity: " + SimulationValues.MYOSIN_TOP_VELOCITY);
+			out.println("Top Actin Velocity: " + SimulationValues.ACTIN_TOP_VELOCITY);
 			out.close();
 		}
 		catch(Exception e){
@@ -68,12 +61,12 @@ public class SynapseSimulation {
 
 		logger.log(Level.INFO, "Initializing simulation setup");
 		for(int i = 0; i < NUM_MOLECULES; i++){
-			if(rand.nextFloat() < PERCENT_MYOSIN){
-				mol = new Myosin(rand.nextInt(WIDTH), rand.nextInt(HEIGHT), 
+			if(SimulationValues.RAND.nextFloat() < SimulationValues.PERCENT_MYOSIN){
+				mol = new Myosin(SimulationValues.RAND.nextInt(WIDTH), SimulationValues.RAND.nextInt(HEIGHT), 
 						WIDTH, HEIGHT, logger);
 			}
 			else{
-				mol = new Actin(rand.nextInt(WIDTH), rand.nextInt(HEIGHT), 
+				mol = new Actin(SimulationValues.RAND.nextInt(WIDTH), SimulationValues.RAND.nextInt(HEIGHT), 
 						WIDTH, HEIGHT, logger);
 			}
 			all.add(mol);
@@ -116,12 +109,12 @@ public class SynapseSimulation {
 	}
 	
 	public void generateMolecules(){
-		for(int i = 0; i < GENESIS_RATE * all.size(); i++){
-			float x = (float) (rand.nextDouble() * WIDTH);
-			float y = (float) (rand.nextDouble() * HEIGHT);
-			double r = rand.nextDouble();
-			if(r < 0.2) all.add(new Actin(x,y, WIDTH, HEIGHT, logger));
-			else if (r < 0.5) all.add(new Myosin(x,y, WIDTH, HEIGHT, logger));
+		for(int i = 0; i < SimulationValues.GENESIS_RATE * all.size(); i++){
+			float x = (float) (SimulationValues.RAND.nextDouble() * WIDTH);
+			float y = (float) (SimulationValues.RAND.nextDouble() * HEIGHT);
+			double r = SimulationValues.RAND.nextDouble();
+			if(r < SimulationValues.ACTIN_PERCENT_GENESIS) all.add(new Actin(x,y, WIDTH, HEIGHT, logger));
+			else if (r < SimulationValues.MYOSIN_PERCENT_GENESIS) all.add(new Myosin(x,y, WIDTH, HEIGHT, logger));
 		}
 	}
 	
@@ -130,9 +123,8 @@ public class SynapseSimulation {
 	      Graphics2D graphics2D = image.createGraphics();
 	      drawAll(graphics2D, d);
 	      try {
-			ImageIO.write(image,"jpeg", new File(dir + i + ".jpeg"));
+			ImageIO.write(image,"jpeg", new File(SimulationValues.OUTPUT_DIR + i + ".jpeg"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	  }

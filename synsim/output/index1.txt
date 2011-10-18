@@ -1,0 +1,7 @@
+Molecule force constant: 0.5
+Chance (out of 1) of decay per frame: 0.05
+Genesis rate: 1 (overall: 0.005)
+Force (relative to Actin-Actin) of Myosin on Actin: 0.03
+Force (relative to Actin-Actin) of Actin on Myosin: 0.05
+Top Myosin Velocity: 0.3
+Top Actin Velocity: 1.2
